@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="bag_to_csv" pkg="ros1_msg_to_csv" type="bag_to_csv" output="screen" required="true">
+    <rosparam>
+      bag: hoge.bag
+      topics: 
+        #- /tf
+        #- /tf_static
+        - /joint_states
+      tf: 
+        parent_frame: world
+        child_frames: [hoge]
+    </rosparam>
+  </node>
+
+</launch>
