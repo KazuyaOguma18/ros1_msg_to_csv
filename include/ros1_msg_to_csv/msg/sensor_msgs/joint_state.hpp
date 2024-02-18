@@ -10,7 +10,7 @@ class JointStateMsg : public BaseMsg {
  public:
   JointStateMsg() : BaseMsg(), is_first(true) {}
 
-  bool init(const std::string& filename) override {
+  bool onInit(const std::string& filename) override {
 
     ROS_INFO_STREAM("msg_to_csv::JointStateMsg::init(), filename: " << filename);
 

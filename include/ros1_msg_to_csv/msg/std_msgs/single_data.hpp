@@ -10,7 +10,7 @@ namespace msg_to_csv {
 template<class Msg>
 class SingleDataMsg : public BaseMsg {
  public:
-  bool init(const std::string& filename) override {
+  bool onInit(const std::string& filename) override {
 
     ROS_INFO_STREAM("msg_to_csv::TF::init()");
 

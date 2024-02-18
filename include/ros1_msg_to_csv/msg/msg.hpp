@@ -3,6 +3,8 @@
 
 #include <rosbag/bag.h>
 #include <fstream>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
 namespace msg_to_csv {
 
@@ -10,11 +12,38 @@ class BaseMsg {
  public:
   BaseMsg() {}
 
-  virtual bool init(const std::string& filename) = 0;
+  virtual bool onInit(const std::string& filename) = 0;
+
+  bool init(const std::string& filename, const std::string& _topic) {
+    topic_ = _topic;
+    return onInit(filename);
+  }
 
   virtual void save(rosbag::MessageInstance const m) = 0;
 
+  std::string getTopic() const {
+    return topic_;
+  }
+
+  void setUseTF(const bool _use_tf) {
+    use_tf = _use_tf;
+  }
+
+  bool isUseTF() const {
+    return use_tf;
+  }
+
+  void setTFBuffer(tf2_ros::Buffer* _tf_buf) {
+    tf_buf = _tf_buf;
+  }
+
+ private:
+  std::string topic_;
+
+ protected:
   std::ofstream csv;
+  bool use_tf;
+  tf2_ros::Buffer* tf_buf;
 };
 
 std::map<std::string, std::function<BaseMsg*()>> factoryMap;
