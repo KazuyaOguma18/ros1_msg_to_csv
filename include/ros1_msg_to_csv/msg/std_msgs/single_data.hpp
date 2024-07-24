@@ -12,7 +12,7 @@ class SingleDataMsg : public BaseMsg {
  public:
   bool onInit(const std::string& filename) override {
 
-    ROS_INFO_STREAM("msg_to_csv::TF::init()");
+    ROS_INFO_STREAM("msg_to_csv::SingleDataMsg::init()");
 
     csv = std::ofstream(filename);
 

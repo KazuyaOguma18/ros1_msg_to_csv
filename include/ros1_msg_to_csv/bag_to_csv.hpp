@@ -43,7 +43,7 @@ class BagToCSV {
         } 
         std::shared_ptr<BaseMsg> msg(createMsg(topic_type));
         if (msg == nullptr) {
-          ROS_ERROR_STREAM("Failed to Create Msg '" << topic_type << "' passed..");
+          ROS_ERROR_STREAM("Failed to Create Msg '" << topic_type << ", " << topic << "' passed..");
           continue;
         }
         if (msg->init(get_filename(bag.getFileName()) + replace(topic, "/", "-") + ".csv", topic)) {
