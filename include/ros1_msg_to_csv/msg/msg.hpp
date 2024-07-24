@@ -29,8 +29,16 @@ class BaseMsg {
     use_tf = _use_tf;
   }
 
+  void setUseTransform(const bool _use_transform) {
+    use_transform = _use_transform;
+  }
+
   bool isUseTF() const {
     return use_tf;
+  }
+
+  bool isUseTransform() const {
+    return use_transform;
   }
 
   void setTFBuffer(tf2_ros::Buffer* _tf_buf) {
@@ -42,7 +50,7 @@ class BaseMsg {
 
  protected:
   std::ofstream csv;
-  bool use_tf;
+  bool use_tf, use_transform;
   tf2_ros::Buffer* tf_buf;
 };
 

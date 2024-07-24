@@ -24,7 +24,9 @@ class WrenchStampedMsg : public BaseMsg {
     namespace rp = ros::param;
     namespace rn = ros::names;
     ref_frame_ = rp::param<std::string>(rn::append(BaseMsg::getTopic(), "reference_frame"), "");
+    sor_frame_ = rp::param<std::string>(rn::append(BaseMsg::getTopic(), "source_frame"), "");
     BaseMsg::setUseTF(ref_frame_ != "");
+    BaseMsg::setUseTransform(sor_frame_ != "");
 
     // set fitst row
     csv << "/header/frame_id" << "," << "/header/stamp" << "," << "/header/seq" << ",";
@@ -50,7 +52,30 @@ class WrenchStampedMsg : public BaseMsg {
 
     Eigen::Vector3d force(msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z),
                     torque(msg.wrench.torque.x, msg.wrench.torque.y, msg.wrench.torque.z);
-    if (BaseMsg::isUseTF()) {
+    if (BaseMsg::isUseTransform()) {
+      if (BaseMsg::tf_buf->canTransform(ref_frame_, sor_frame_, ros::Time(0))) {
+        geometry_msgs::TransformStamped t = BaseMsg::tf_buf->lookupTransform(ref_frame_, sor_frame_, ros::Time(0), ros::Duration(1.0));
+        Eigen::Isometry3d iso = tf2::transformToEigen(t);
+        if (last_iso_.matrix() == iso.matrix()) return;
+
+        // write wrench
+        csv << ref_frame_ << "," << msg.header.stamp.toNSec() << "," << msg.header.seq << ",";
+        csv << force.x() << "," << force.y() << "," << force.z() << ",";
+        csv << torque.x() << "," << torque.y() << "," << torque.z() << ",";      
+        // write TF
+        csv << t.header.frame_id << "," << t.header.stamp.toNSec() << "," << t.header.seq << ",";
+        csv << t.child_frame_id << ",";
+        csv << t.transform.translation.x << "," << t.transform.translation.y << "," << t.transform.translation.z << ",";
+        csv << t.transform.rotation.w << "," << t.transform.rotation.x << "," << t.transform.rotation.y << "," << t.transform.rotation.z << ",";
+        csv << std::endl;
+
+        last_iso_ = iso;
+      }
+      else {
+        ROS_ERROR_STREAM("Couldn't find the transform between " << ref_frame_ << " - " << msg.header.frame_id);
+      }  
+    }
+    if (BaseMsg::isUseTF() && !BaseMsg::isUseTransform()) {
       if (BaseMsg::tf_buf->canTransform(ref_frame_, msg.header.frame_id, ros::Time(0))) {
         geometry_msgs::TransformStamped t = BaseMsg::tf_buf->lookupTransform(ref_frame_, msg.header.frame_id, ros::Time(0), ros::Duration(1.0));
         Eigen::Isometry3d iso = tf2::transformToEigen(t);
@@ -58,6 +83,8 @@ class WrenchStampedMsg : public BaseMsg {
 
         force = iso.rotation() * force;
         torque = iso.rotation() * torque;
+        
+
         // write wrench
         csv << ref_frame_ << "," << msg.header.stamp.toNSec() << "," << msg.header.seq << ",";
         csv << force.x() << "," << force.y() << "," << force.z() << ",";
@@ -85,7 +112,7 @@ class WrenchStampedMsg : public BaseMsg {
 
   private:
     Eigen::Isometry3d last_iso_;
-    std::string ref_frame_;
+    std::string ref_frame_, sor_frame_;
     bool use_tf_;
 
   public: static Registrar<WrenchStampedMsg> registrar;

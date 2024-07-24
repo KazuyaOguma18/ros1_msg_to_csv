@@ -3,11 +3,11 @@
 
   <node name="bag_to_csv" pkg="ros1_msg_to_csv" type="bag_to_csv" output="screen" required="true">
     <rosparam>
-      bag: hoge.bag
+      bags: 
+        - /home/ubuntu/Documents/middle_towing_v.bag
       topics: 
-        #- /tf
-        #- /tf_static
-        - /joint_states
+        - /tf
+        - /tf_static
       tf: 
         parent_frame: world
         child_frames: [hoge]
