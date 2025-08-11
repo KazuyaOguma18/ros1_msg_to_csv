@@ -10,6 +10,9 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "utils.hpp"
 
 namespace msg_to_csv {
@@ -25,6 +28,11 @@ class BagToCSV {
     for (const auto& bag_path : bag_paths) {
       ROS_INFO_STREAM("Opening bag : " << bag_path);
       bag.open(bag_path, rosbag::bagmode::Read);
+
+      // Get output directory and create it if it doesn't exist
+      std::string output_dir = get_output_directory(bag_path);
+      mkdir(output_dir.c_str(), 0755);
+      ROS_INFO_STREAM("Saving CSV files to: " << output_dir);
 
       rosbag::View view(bag, rosbag::TopicQuery(topics));
 
@@ -43,10 +51,10 @@ class BagToCSV {
         } 
         std::shared_ptr<BaseMsg> msg(createMsg(topic_type));
         if (msg == nullptr) {
-          ROS_ERROR_STREAM("Failed to Create Msg '" << topic_type << "' passed..");
+          ROS_ERROR_STREAM("Failed to Create Msg '" << topic << "[" << topic_type << "]' passed..");
           continue;
         }
-        if (msg->init(get_filename(bag.getFileName()) + replace(topic, "/", "-") + ".csv", topic)) {
+        if (msg->init(output_dir + "/" + get_filename(bag.getFileName()) + replace(topic, "/", "-") + ".csv", topic)) {
           msgs.push_back(msg);
         }
 
